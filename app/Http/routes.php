@@ -73,4 +73,5 @@ Route::group(array('prefix' => 'global'), function()
 	Route::get('/sectionByYear', array('uses' => 'GlobalController@sectionByYear', 'as' => 'sectionByYear'));
 	Route::get('/getStudInfo', array('uses' => 'GlobalController@getStudInfo', 'as' => 'getStudInfo'));
 	Route::get('/generateReportBy', array('uses' => 'GlobalController@generateReportBy', 'as' => 'generateReportBy'));
+	Route::post('/exportStudentList', array('uses' => 'GlobalController@exportStudentList', 'as' => 'exportStudentList'));
 });

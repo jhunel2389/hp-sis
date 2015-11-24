@@ -27,7 +27,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a href="{{ URL::route('home') }}" class="navbar-brand wt"><b>Unit Testing</b></a>
+				<a href="{{ URL::route('home') }}" class="navbar-brand wt"><b>Student Info</b></a>
 			</div>
 			<div class="navbar-collapse collapse navbar-responsive-collapse">
 				<ul class="nav navbar-nav">

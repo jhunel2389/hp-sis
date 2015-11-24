@@ -12,23 +12,30 @@
 				<h5>Generate Report</h5>
 					 <div class="list-group">
 						  <div class="list-group-item active">
-						    Sidebar Text
+						    Type
 						  </div>
 						  <a href="#all-student"  onclick="allStudent();"class="list-group-item">All Student:
 						  </a>
 						  <a href="#student-by" onclick="studentBy();" class="list-group-item">Student By:
 						  </a>
-						  <a href="#student-by-age"  onclick="cityForm();" class="list-group-item">Student by Age:
-						  </a>
+						  <!--<a href="#student-by-age"  onclick="cityForm();" class="list-group-item">Student by Age:
+						  </a>-->
 					</div>
 			</div>
 
 			<div class="col-md-10 col-md-offset-0">
 				<h1 id="hTitle"></h1>
 				
-				<div class="row">
+				<div class="row"> 
 					<div id="inputForm">
 					</div>
+					<div id="inputForm2">
+					</div>
+					<form id="frmParam" method="post" action="{{URL::Route('exportStudentList')}}">
+						<input type="hidden" id="hdndbColumn" name="hdndbColumn">
+						<input type="hidden" id="hdnvalue" name="hdnvalue">
+						<input type="hidden" name="_token" value="{{ csrf_token() }}">
+					</form>
 				</div>
 				<div class="row">
 					<div class="col-md-3">
@@ -63,6 +70,8 @@
 <script type="text/javascript">
 	function studentBy()
 	{
+		$('#dataList').empty();
+		$('#inputForm2').empty();
 		$("#hTitle").text('Student by:');
 		$("#inputForm").empty();
 		$("#inputForm").append('<div class="col-md-4">\
@@ -88,6 +97,7 @@
 
 	function fieldsParam()
 	{
+		$('#inputForm2').empty();
 		$paramVal = $("#drpType").val();
 		if($paramVal == 1)
 		{
@@ -140,6 +150,72 @@
 
 	function generateReportBy()
 	{
+		$paramVal = $("#drpType").val();
+		if($paramVal == 1)
+		{
+			$value = $("#drpYear").val();
+			$dbColumn = "year_lvl";
+			
+		}
+		else if($paramVal == 2)
+		{
+			$value = $("#drpSection").val();
+			$dbColumn = "section";
+		}
+		else if($paramVal == 3)
+		{
+			$value = $("#drpCity").val();
+			$dbColumn = "city";
+		}
+		else if($paramVal == 4)
+		{
+			$value = $("#zip").val();
+			$dbColumn = "zip";
+		}
+		else
+		{
+			$value = "all";
+			$dbColumn = "all";
+		}
+		$("#hdndbColumn").val($dbColumn);
+		$("#hdnvalue").val($value);
+		$.get('{{URL::Route('generateReportBy')}}', { dbColumn :  $dbColumn , value :  $value } , function(data)
+		{
+			$('#dataList').empty();
+			$('#inputForm2').empty();
+			if(data.length != 0)
+			{
+				for(var i = 0; i< data.length; i++)
+				{
+					$('#dataList').append('<div class="row">\
+											<div class="col-md-3">\
+													<input type="text" class="form-control" value="'+data[i].stud_lname+'" disabled>\
+											</div>\
+											<div class="col-md-3">\
+													<input type="text" class="form-control" value="'+data[i].stud_fname+'" disabled>\
+											</div>\
+											<div class="col-md-3">\
+													<input type="text" class="form-control" value="'+data[i].stud_year+'" disabled>\
+											</div>\
+											<div class="col-md-3">\
+													<input type="text" class="form-control" value="'+data[i].stud_section+'" disabled>\
+											</div>\
+										</div>');
+				}
+				$("#inputForm2").append('<div class="form-group">\
+						<input type="submit" value="Export to cSV" onClick="exportReport();" class="btn btn-default">\
+					</div>');			
+			}
+			else
+			{
+				$('#dataList').append('<option value = "">No Result fund.</option>');
+			}
+		});
+	}
+
+	function exportReport()
+	{
+		/*$paramVal = $("#drpType").val();
 		if($paramVal == 1)
 		{
 			$value = $("#drpYear").val();
@@ -160,42 +236,26 @@
 			$value = $("#zip").val();
 			$dbColumn = "zip";
 		}
-
-		$.get('{{URL::Route('generateReportBy')}}', { dbColumn :  $dbColumn , value :  $value } , function(data)
+		else
 		{
-			$('#dataList').empty();
-			if(data.length != 0)
-			{
-				for(var i = 0; i< data.length; i++)
-				{
-					$('#dataList').append('<div class="row">\
-											<div class="col-md-3">\
-													<input type="text" class="form-control" value="'+data[i].stud_lname+'" disabled>\
-											</div>\
-											<div class="col-md-3">\
-													<input type="text" class="form-control" value="'+data[i].stud_fname+'" disabled>\
-											</div>\
-											<div class="col-md-3">\
-													<input type="text" class="form-control" value="'+data[i].stud_year+'" disabled>\
-											</div>\
-											<div class="col-md-3">\
-													<input type="text" class="form-control" value="'+data[i].stud_section+'" disabled>\
-											</div>\
-										</div>');				
-				}
-			}
-			else
-			{
-				$('#dataList').append('<option value = "">No Result fund.</option>');
-			}
-		});
+			$value = "all";
+			$dbColumn = "all";
+		}
+		$_token = "{{ csrf_token() }}";
+		$.post('{{URL::Route('exportStudentList')}}', { _token: $_token, dbColumn :  $dbColumn , value :  $value } , function(data)
+		{	
+		});*/
+		$('#frmParam').submit();
 	}
+
 	function allStudent()
 	{
+		$('#dataList').empty();
+		$('#inputForm2').empty();
 		$("#hTitle").text('All Student:');
 		$("#inputForm").empty();
 		$("#inputForm").append('<div class="form-group">\
-									<input type="submit" value="Generate" onClick="generateReport();" class="btn btn-default">\
+									<input type="submit" value="Generate" onClick="generateReportBy();" class="btn btn-default">\
 								</div>');
 	}
 
@@ -215,6 +275,8 @@
 
 	function allSections()
 	{
+		$('#dataList').empty();
+		$('#inputForm2').empty();
 		$.get('{{URL::Route('allSections')}}', { drpYearLvl :  $('#drpYearLvl').val() } , function(response)
 		{
 				$('#drpSection').empty();
@@ -230,6 +292,8 @@
 
 	function allCity()
 	{
+		$('#dataList').empty();
+		$('#inputForm2').empty();
 		$.get('{{URL::Route('allCity')}}' , function(response)
 		{
 				$('#drpCity').empty();

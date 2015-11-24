@@ -12,6 +12,8 @@ use Input;
 use Auth;
 use Redirect;
 use Excel;
+use League\Csv\Reader;
+use Schema;
 
 class GlobalController extends Controller {
 
@@ -160,7 +162,15 @@ class GlobalController extends Controller {
 			$response = array();
 			$dbColumn = Input::get('dbColumn');
 			$value = Input::get('value');
-			$infos =  Student::where($dbColumn,'=',$value)->orderBy('lname', 'asc')->get();
+			if($dbColumn != "all")
+			{
+				$infos =  Student::where($dbColumn,'=',$value)->orderBy('lname', 'asc')->get();
+			}
+			else
+			{
+				$infos =  Student::all();
+			}
+			
 
 			foreach ($infos as $info) {
 				$response[] = array(
@@ -186,12 +196,54 @@ class GlobalController extends Controller {
 			return $response;			
 		}
 
-		/*public function exportUserList(UserListExport $export)
+		public function exportStudentList()
 	    {
 	        // work on the export
-	        return $export->sheet('sheetName', function($sheet)
-	        {
-
-	        })->export('xls');
-	    }*/
+	        $csv = \League\Csv\Writer::createFromFileObject(new \SplTempFileObject());
+	    	$csv->setOutputBOM(Reader::BOM_UTF8);
+	        $dbColumn = Input::get('hdndbColumn');
+			$value = Input::get('hdnvalue');
+			if($dbColumn != "all")
+			{
+				$infos =  Student::where($dbColumn,'=',$value)->orderBy('lname', 'asc')->get();
+			}
+			else
+			{
+				$infos =  Student::all();
+			}
+			$headers = Schema::getColumnListing('student_record');
+			$notInclude = ["id","created_at","updated_at"];
+			$x = 0;
+	       	foreach ($headers as $header) {
+	       		if(in_array($header, $notInclude))
+	       		{
+	       			unset($headers[$x]);
+	       		}
+	       		$x++;
+	       	}
+			$csv->insertOne($headers);
+			foreach ($infos as $info) 
+		    {
+		    	$data = array();
+		   		foreach ($headers as $header) {
+		   			if($header == "section")
+		   			{
+		   				$data[count($data)] = $this->secInfo($info[$header])['description'];
+		   			}
+		   			elseif($header == "year_lvl")
+		   			{
+		   				$data[count($data)] = $this->yearInfo($info[$header])['description'];
+		   			}
+		   			else
+		   			{
+		   				$data[count($data)] = $info[$header];
+		   			}
+		   			
+		   		}
+	            $csv->insertOne($data);
+			}
+			$date_now = date('Y-m-d-H:i:s');
+			$filename = 'student_record('.$date_now.').csv';
+			$csv->output($filename);
+	    }
 }
